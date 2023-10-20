@@ -1,0 +1,141 @@
+---
+title: "Exercícios Complementares"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+```
+### Exercício 01
+```{r message=FALSE, warning=FALSE}
+dados_01 = read_csv2('exercicio_01.csv')
+
+faixas_renda <- c(0, 2000, 4000, 6000, 8000, 10000, 12000)
+
+legenda = c("0-2.000", "2.001-4.000", "4.001-6.000", "6.001-8.000", "8.001-10.000", "10.001-12.000")
+
+summary(dados_01)
+
+(dados_classificados <- dados_01 %>%
+  mutate(faixa_renda = cut(Renda, breaks = faixas_renda, labels = legenda)) %>% 
+  count(faixa_renda)) %>% 
+  rename(freq_abs = n) %>% 
+  mutate(freq_rel = freq_abs / sum(freq_abs)) %>% 
+  mutate(freq_abs_acc = cumsum(freq_abs)) %>% 
+  mutate(freq_rel_acc = cumsum(freq_rel))
+
+dados_classificados %>% 
+  ggplot(aes(x = faixa_renda, y = n)) +
+    geom_bar(stat = "identity", fill = "blue") +
+    labs(title = "Histograma de Frequência Absoluta",
+         x = "Faixa de Renda",
+         y = "Frequência Absoluta")
+
+```
+### Exercício 02
+```{r message=FALSE, warning=FALSE}
+dados_02 = read_csv2('exercicio_02.csv')
+
+summary(dados_02)
+
+resultados <- dados_02 %>% 
+  summarise(
+    N = c(length(`Ação 1`), length(`Ação 2`)),
+    Media = c(mean(`Ação 1`), mean(`Ação 2`)),
+    Desvio_padrao = c(sd(`Ação 1`), sd(`Ação 2`)),
+    VAR = c(var(`Ação 1`), var(`Ação 2`)),
+    Amplitude = c((max(`Ação 1`) - min(`Ação 1`)), (max(`Ação 2`) - min(`Ação 2`))),
+    Erro_padrao = Desvio_padrao / ((N)^0.5),
+    CV = Desvio_padrao / Media
+  )
+rownames(resultados) <- c("01", "02")
+resultados
+
+correlacao <- cor(dados_02$`Ação 1`, dados_02$`Ação 2`)
+cat("Correlação = ", correlacao)
+
+```
+### Exercício 03
+*Distribuição binomial*
+
+$f(k) = {n \choose k} p^{k} (1-p)^{n-k}$
+
+>3.Em certo jogo, probabilidade de vitória (sucesso) a cada nova jogada é 1/6. Se forem feitas 10 jogadas, quais são as seguintes probabilidades:
+a) Ter vitória em 4 jogadas.
+b) Ter vitória em pelo menos 7 jogadas.
+
+
+```{r}
+p = 1/6
+n = 10
+
+# a) P(X=4)
+prob_x4 <- dbinom(4, size = n, prob = p)
+prob_x4
+
+# b) P(X>7)
+prob_x7 <- pbinom(6, size = n, prob = p, lower.tail = FALSE)
+prob_x7
+
+```
+### Exercício 4
+*Distribuição binomial negativa*
+
+$f(k) = {r + x - 1 \choose r - 1} p^{r} (1-p)^{x}$
+
+>Suponha que um aluno acerte três questões a cada cinco testes. Seja X o número de tentativas até o décimo segundo acerto. Determine a probabilidade de que o aluno precise fazer 20 questões para acertar 12.
+
+```{r}
+p = 3/5
+r = 12
+x = 20 - r
+
+prob <- dnbinom(x = x, size = r, p = p)
+prob
+```
+
+### Exercício 5
+*Distribuição de Poisson*
+
+$p_X(x) = \mathbb{P}(X=x)=e^{-\lambda}\frac{\lambda^{x}}{x!} \quad x=0,1,2,3 ...\\$
+
+>Suponha que, em determinado hospital, 3 clientes são operados diariamente de cirurgia do estômago, seguindo uma distribuição Poisson. Calcule a probabilidade de que 28 clientes sejam operados na próxima semana (7 dias úteis).
+
+```{r}
+lambda = 3
+
+prob <- dpois(4, lambda = lambda)
+prob
+
+```
+### Exercício 6
+*Distribuição normal*
+
+6.Nos últimos meses, foram feitas medições do tempo decorrido entre o início e finalização de uma das etapas do processo de produção de certo produto. O tempo médio foi calculado em 26,5 minutos e o desvio padrão foi de 4,0 minutos. Sabendo que tal variável segue uma distribuição normal, identifique as seguintes informações:
+
+a) P(X>37)
+
+b) P(X<20)
+
+c) P(22<X<28)
+
+```{r}
+t_mean = 26.5
+t_sd = 4
+
+# a)
+prob_a <- pnorm(37, mean = t_mean, sd = t_sd, lower.tail = FALSE)
+prob_a
+
+# b)
+prob_b <- pnorm(20, mean = t_mean, sd = t_sd, lower.tail = TRUE)
+prob_b
+
+# c)
+prob_c <- pnorm(28, mean = t_mean, sd = t_sd, lower.tail = TRUE) - pnorm(22, mean = t_mean, sd = t_sd, lower.tail = TRUE)
+prob_c
+```
+
+
+
+
+
